@@ -4,7 +4,7 @@ import com.sky.constant.JwtClaimsConstant;
 import com.sky.context.BaseContext;
 import com.sky.properties.JwtProperties;
 import com.sky.utils.JwtUtil;
-import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -51,8 +51,28 @@ public class JwtTokenAdminInterceptor implements HandlerInterceptor {
             log.info("当前员工id：{}", empId);
             //3、通过，放行
             return true;
-        } catch (Exception ex) {
-            //4、不通过，响应401状态码
+        } catch (ExpiredJwtException e) {
+            log.info("JWT令牌已过期: {}", e.getMessage());
+            response.setStatus(401);
+            return false;
+        } catch (MalformedJwtException e) {
+            log.info("JWT令牌格式错误: {}", e.getMessage());
+            response.setStatus(401);
+            return false;
+        } catch (SignatureException e) {
+            log.info("JWT签名验证失败: {}", e.getMessage());
+            response.setStatus(401);
+            return false;
+        } catch (UnsupportedJwtException e) {
+            log.info("JWT令牌不支持: {}", e.getMessage());
+            response.setStatus(401);
+            return false;
+        } catch (IllegalArgumentException e) {
+            log.info("JWT参数异常: {}", e.getMessage());
+            response.setStatus(401);
+            return false;
+        } catch (Exception e) {
+            log.info("JWT令牌校验失败: {}", e.getMessage());
             response.setStatus(401);
             return false;
         }
