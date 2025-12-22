@@ -1,1 +1,6 @@
-md5加密 -> BCrypt加密 无需解密
+1。 问题描述： 在Sky-Take-Out项目中，使用了AliOssUtil类来实现文件上传到阿里云OSS服务。但是在启动项目时，报错提示AliOssUtil类没有无参构造函数。
+问题原因： AliOssUtil类上同时使用了@Component和@AllArgsConstructor注解，但没有提供无参构造函数。Spring在自动扫描并创建Bean时，默认会尝试使用无参构造函数，而@AllArgsConstructor注解只生成包含所有属性的构造函数，导致Spring无法实例化该Bean。
+解决方法： 有两种解决方案：
+移除@Component注解：由于已经在OssConfiguration.java中通过@Bean显式配置了AliOssUtil的Bean实例，因此不需要再使用@Component进行自动扫描。
+添加@NoArgsConstructor注解：如果需要保留@Component注解，可以添加@NoArgsConstructor来生成无参构造函数，同时保留@AllArgsConstructor。
+推荐修改方案： 移除AliOssUtil类上的@Component注解
