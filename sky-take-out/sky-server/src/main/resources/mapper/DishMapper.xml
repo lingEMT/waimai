@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sky.mapper.DishMapper">
+    <resultMap id="dish" type="com.sky.entity.Dish">
+        <id property="id" column="id" />
+        <result property="name" column="name" />
+        <result property="categoryId" column="category_id" />
+        <result property="price" column="price" />
+        <result property="status" column="status" />
+        <result property="createTime" column="create_time" />
+        <result property="updateTime" column="update_time" />
+    </resultMap>
+    <select id="pageQuery" resultType="com.sky.vo.DishVO">
+        select d.*, c.name as categoryName from dish d left join category c on d.category_id = c.id
+        <where>
+            <if test="name != null">d.name like concat('%', #{name}, '%')</if>
+            <if test="categoryId != null">and d.category_id = #{categoryId}</if>
+            <if test="status != null">and d.status = #{status}</if>
+        </where>
+        order by d.create_time desc
+    </select>
+
+    <insert id="insertDishFlavors" parameterType="java.util.List">
+        insert into dish_flavor (dish_id, name, value) values
+        <foreach collection="flavors" item="df" separator=",">
+            (#{df.dishId}, #{df.name}, #{df.value})
+        </foreach>
+    </insert>
+
+     <update id="update" parameterType="com.sky.entity.Dish">
+        update dish
+        <set>
+            <if test="name != null">name = #{name}, </if>
+            <if test="categoryId != null">category_id = #{categoryId}, </if>
+            <if test="price != null">price = #{price}, </if>
+            <if test="status != null">status = #{status}, </if>
+            <if test="updateTime != null">update_time = #{updateTime}, </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteDishFlavorsBatch" parameterType="java.util.List">
+        delete from dish_flavor where dish_id in
+        <foreach collection="dishIds" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="deleteBatch" parameterType="java.lang.Long">
+        delete from dish where id in
+        <foreach collection="idList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>
