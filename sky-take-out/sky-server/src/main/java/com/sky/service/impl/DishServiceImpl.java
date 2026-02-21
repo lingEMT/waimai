@@ -3,6 +3,7 @@ package com.sky.service.impl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
+import com.sky.constant.StatusConstant;
 import com.sky.dto.DishDTO;
 import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Dish;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +37,7 @@ public class DishServiceImpl implements DishService {
 
     /**
      * 新增菜品
+     *
      * @param dishDTO
      */
     @Override
@@ -75,6 +78,7 @@ public class DishServiceImpl implements DishService {
 
     /**
      * 分页查询菜品
+     *
      * @param dishPageQueryDTO
      * @return
      */
@@ -85,11 +89,12 @@ public class DishServiceImpl implements DishService {
         return new PageResult(page.getTotal(), page.getResult());
     }
 
-     /**
-      * 修改菜品状态
-      * @param status
-      * @param id
-      */
+    /**
+     * 修改菜品状态
+     *
+     * @param status
+     * @param id
+     */
     @Override
     @Transactional
     public void enableOrDisable(Integer status, Long id) {
@@ -99,10 +104,11 @@ public class DishServiceImpl implements DishService {
         dishMapper.update(dish);
     }
 
-     /**
-      * 修改菜品
-      * @param dishDTO
-      */
+    /**
+     * 修改菜品
+     *
+     * @param dishDTO
+     */
     @Override
     @Transactional
     public void updateWithFlavors(DishDTO dishDTO) {
@@ -121,10 +127,11 @@ public class DishServiceImpl implements DishService {
         dishMapper.insertDishFlavors(flavors);
     }
 
-     /**
-      * 删除菜品
-      * @param ids 逗号分隔的菜品id字符串
-      */
+    /**
+     * 删除菜品
+     *
+     * @param ids 逗号分隔的菜品id字符串
+     */
     @Override
     @Transactional
     public void deleteBatch(List<Long> ids) {
@@ -132,7 +139,7 @@ public class DishServiceImpl implements DishService {
                 .forEach(id -> {
                     Dish dish = dishMapper.getById(id);
                     // 检查菜品是否为起售状态
-                    if(dish.getStatus() == 1){
+                    if (dish.getStatus() == 1) {
                         throw new DeletionNotAllowedException(MessageConstant.DISH_ON_SALE);
                     }
                     // 检查菜品是否关联了套餐
@@ -147,4 +154,43 @@ public class DishServiceImpl implements DishService {
         // 删除菜品口味
         dishMapper.deleteDishFlavorsBatch(ids);
     }
+
+    /**
+     * 条件查询菜品和口味
+     * @param dish
+     * @return
+     */
+    public List<DishVO> listWithFlavor(Dish dish) {
+        List<Dish> dishList = dishMapper.list(dish);
+
+        List<DishVO> dishVOList = new ArrayList<>();
+
+        for (Dish d : dishList) {
+            DishVO dishVO = new DishVO();
+            BeanUtils.copyProperties(d,dishVO);
+
+            //根据菜品id查询对应的口味
+            List<DishFlavor> flavors = dishMapper.getFlavorsByDishId(d.getId());
+
+            dishVO.setFlavors(flavors);
+            dishVOList.add(dishVO);
+        }
+
+        return dishVOList;
+    }
+
+    /**
+     * 根据分类id查询菜品
+     * @param categoryId
+     * @return
+     */
+    @Override
+    public List<Dish> list(Long categoryId) {
+        Dish dish = Dish.builder()
+                .categoryId(categoryId)
+                .status(StatusConstant.ENABLE)
+                .build();
+        return dishMapper.list(dish);
+    }
+
 }
