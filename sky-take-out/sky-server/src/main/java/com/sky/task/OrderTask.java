@@ -20,7 +20,7 @@ public class OrderTask {
     /**
      * 处理超时订单
      */
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 0/5 * * * *")
     public void processTimeoutOrder() {
         log.info("处理超时订单");
 

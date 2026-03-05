@@ -23,6 +23,7 @@ public class OrderController {
 
     /**
      * 提交订单
+     *
      * @param ordersSubmitDTO
      * @return
      */
@@ -84,6 +85,19 @@ public class OrderController {
     @ApiOperation("再来一单")
     public Result repetition(@PathVariable Long id) {
         orderService.repetition(id);
+        return Result.success();
+    }
+
+    /**
+     * 催单
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping("/reminder/{id}")
+    @ApiOperation("催单")
+    public Result reminder(@PathVariable Long id) {
+        orderService.reminder(id);
         return Result.success();
     }
 }
